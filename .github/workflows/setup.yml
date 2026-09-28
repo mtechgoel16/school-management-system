@@ -1,5 +1,4 @@
-
-name: Generate Complete School ERP
+name: Generate Complete School ERP with Database
 
 on:
   push:
@@ -25,15 +24,264 @@ jobs:
         run: |
           pip install qrcode reportlab
 
-      - name: Auto-generate All Project Files
+      - name: Auto-generate Database & Project Files
         run: |
           python - << 'EOF'
           import os
 
           FILES = {}
 
-          # Docker & Compose
+          # ---------------------------------------------------------
+          # 1. DATABASE SCHEMA & SEED SQL (Directly visible in Git)
+          # ---------------------------------------------------------
+          FILES['database/01_schema.sql'] = """-- SCHOOL MANAGEMENT SYSTEM ERP - MASTER POSTGRESQL SCHEMA
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+          -- ORGANIZATIONS & SCHOOLS (§19 Multi-School Isolation)
+          CREATE TABLE IF NOT EXISTS organizations (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              name VARCHAR(255) NOT NULL,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS schools (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+              name VARCHAR(255) NOT NULL,
+              code VARCHAR(50) UNIQUE NOT NULL,
+              logo_url TEXT,
+              contact_email VARCHAR(255),
+              contact_phone VARCHAR(50),
+              is_active BOOLEAN DEFAULT TRUE,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS academic_years (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              name VARCHAR(20) NOT NULL,
+              start_date DATE NOT NULL,
+              end_date DATE NOT NULL,
+              is_current BOOLEAN DEFAULT FALSE,
+              UNIQUE(school_id, name)
+          );
+
+          -- ACADEMIC STRUCTURE (§17)
+          CREATE TABLE IF NOT EXISTS school_classes (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              name VARCHAR(50) NOT NULL,
+              display_order INT DEFAULT 0,
+              UNIQUE(school_id, name)
+          );
+
+          CREATE TABLE IF NOT EXISTS class_sections (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_class_id UUID REFERENCES school_classes(id) ON DELETE CASCADE,
+              name VARCHAR(10) NOT NULL,
+              UNIQUE(school_class_id, name)
+          );
+
+          -- USERS & ROLES (§21, §91)
+          CREATE TABLE IF NOT EXISTS users (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              username VARCHAR(150) UNIQUE NOT NULL,
+              password_hash VARCHAR(255) NOT NULL,
+              email VARCHAR(255),
+              mobile VARCHAR(20),
+              role VARCHAR(30) NOT NULL,
+              school_id UUID REFERENCES schools(id) ON DELETE SET NULL,
+              is_active BOOLEAN DEFAULT TRUE,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          -- STUDENTS & ENROLLMENT (§21, §26)
+          CREATE TABLE IF NOT EXISTS students (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              user_id UUID UNIQUE REFERENCES users(id) ON DELETE SET NULL,
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              admission_number VARCHAR(100) NOT NULL,
+              student_id_code VARCHAR(100) NOT NULL,
+              first_name VARCHAR(100) NOT NULL,
+              last_name VARCHAR(100) NOT NULL,
+              date_of_birth DATE NOT NULL,
+              gender VARCHAR(10) NOT NULL,
+              father_name VARCHAR(150),
+              mother_name VARCHAR(150),
+              aadhaar_number VARCHAR(12) DEFAULT NULL,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE(school_id, admission_number),
+              UNIQUE(school_id, student_id_code)
+          );
+
+          CREATE TABLE IF NOT EXISTS student_enrollments (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              academic_year_id UUID REFERENCES academic_years(id) ON DELETE CASCADE,
+              section_id UUID REFERENCES class_sections(id) ON DELETE CASCADE,
+              roll_number INT,
+              status VARCHAR(20) DEFAULT 'ACTIVE',
+              UNIQUE(student_id, academic_year_id)
+          );
+
+          -- ATTENDANCE & LOCK WORKFLOW (§32, §35)
+          CREATE TABLE IF NOT EXISTS daily_attendance (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              section_id UUID REFERENCES class_sections(id) ON DELETE CASCADE,
+              attendance_date DATE NOT NULL,
+              is_locked BOOLEAN DEFAULT FALSE,
+              locked_by UUID REFERENCES users(id),
+              locked_at TIMESTAMP WITH TIME ZONE,
+              UNIQUE(section_id, attendance_date)
+          );
+
+          CREATE TABLE IF NOT EXISTS student_attendance_records (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              daily_attendance_id UUID REFERENCES daily_attendance(id) ON DELETE CASCADE,
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              status VARCHAR(10) NOT NULL CHECK (status IN ('PRESENT', 'ABSENT', 'LATE', 'LEAVE')),
+              remarks TEXT,
+              UNIQUE(daily_attendance_id, student_id)
+          );
+
+          -- EXAMINATIONS & AB STATUS (§36, §42, §43)
+          CREATE TABLE IF NOT EXISTS examinations (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              academic_year_id UUID REFERENCES academic_years(id) ON DELETE CASCADE,
+              name VARCHAR(100) NOT NULL,
+              is_published BOOLEAN DEFAULT FALSE,
+              published_at TIMESTAMP WITH TIME ZONE
+          );
+
+          CREATE TABLE IF NOT EXISTS exam_results (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              examination_id UUID REFERENCES examinations(id) ON DELETE CASCADE,
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              subject_name VARCHAR(100) NOT NULL,
+              max_marks NUMERIC(5,2) NOT NULL,
+              obtained_marks NUMERIC(5,2),
+              is_absent BOOLEAN DEFAULT FALSE,
+              grade VARCHAR(5),
+              remarks TEXT,
+              UNIQUE(examination_id, student_id, subject_name)
+          );
+
+          -- FINANCIAL LEDGER & PAYMENTS (§52, §59, §61)
+          CREATE TABLE IF NOT EXISTS fee_structures (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              name VARCHAR(100) NOT NULL,
+              amount NUMERIC(10,2) NOT NULL,
+              due_day INT DEFAULT 10
+          );
+
+          CREATE TABLE IF NOT EXISTS fee_ledger (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              school_id UUID REFERENCES schools(id) ON DELETE CASCADE,
+              fee_type VARCHAR(100) NOT NULL,
+              period_label VARCHAR(50) NOT NULL,
+              due_date DATE NOT NULL,
+              due_amount NUMERIC(10,2) NOT NULL,
+              paid_amount NUMERIC(10,2) DEFAULT 0.00,
+              remaining_amount NUMERIC(10,2) NOT NULL,
+              status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PARTIAL', 'PAID', 'OVERDUE')),
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS payment_orders (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              gateway_order_id VARCHAR(150) UNIQUE NOT NULL,
+              payable_amount NUMERIC(10,2) NOT NULL,
+              status VARCHAR(20) DEFAULT 'CREATED' CHECK (status IN ('CREATED', 'PAID', 'FAILED', 'EXPIRED')),
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS payment_transactions (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              order_id UUID REFERENCES payment_orders(id) ON DELETE CASCADE,
+              gateway_transaction_id VARCHAR(150) UNIQUE NOT NULL,
+              amount NUMERIC(10,2) NOT NULL,
+              status VARCHAR(20) NOT NULL,
+              payment_method VARCHAR(50),
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS fee_receipts (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              receipt_number VARCHAR(100) UNIQUE NOT NULL,
+              transaction_id UUID REFERENCES payment_transactions(id) ON DELETE CASCADE,
+              student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+              pdf_file_url TEXT,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+          """
+
+          FILES['database/02_seed_data.sql'] = """-- SEED BASELINE DATA (Auto-executed by PostgreSQL on initial container boot)
+          DO $$
+          DECLARE
+              v_org_id UUID;
+              v_school_id UUID;
+              v_ay_id UUID;
+              v_c1_id UUID;
+              v_sec_a_id UUID;
+              v_student_id UUID;
+          BEGIN
+              -- 1. Trust & School
+              INSERT INTO organizations (name) VALUES ('National Education Trust')
+              ON CONFLICT DO NOTHING;
+              SELECT id INTO v_org_id FROM organizations WHERE name = 'National Education Trust' LIMIT 1;
+
+              INSERT INTO schools (organization_id, name, code, contact_email, contact_phone)
+              VALUES (v_org_id, 'Delhi Public Model School', 'DPS001', 'info@delhipublic.edu', '+91 9876543210')
+              ON CONFLICT (code) DO NOTHING;
+              SELECT id INTO v_school_id FROM schools WHERE code = 'DPS001' LIMIT 1;
+
+              -- 2. Academic Year
+              INSERT INTO academic_years (school_id, name, start_date, end_date, is_current)
+              VALUES (v_school_id, '2026-27', '2026-04-01', '2027-03-31', TRUE)
+              ON CONFLICT (school_id, name) DO NOTHING;
+              SELECT id INTO v_ay_id FROM academic_years WHERE school_id = v_school_id AND name = '2026-27' LIMIT 1;
+
+              -- 3. School Class & Section
+              INSERT INTO school_classes (school_id, name, display_order)
+              VALUES (v_school_id, 'Class 1', 5)
+              ON CONFLICT (school_id, name) DO NOTHING;
+              SELECT id INTO v_c1_id FROM school_classes WHERE school_id = v_school_id AND name = 'Class 1' LIMIT 1;
+
+              INSERT INTO class_sections (school_class_id, name)
+              VALUES (v_c1_id, 'A')
+              ON CONFLICT (school_class_id, name) DO NOTHING;
+              SELECT id INTO v_sec_a_id FROM class_sections WHERE school_class_id = v_c1_id AND name = 'A' LIMIT 1;
+
+              -- 4. Demo Student
+              INSERT INTO students (school_id, admission_number, student_id_code, first_name, last_name, date_of_birth, gender, father_name, mother_name)
+              VALUES (v_school_id, 'ADM1024', 'ST001', 'Arjun', 'Sharma', '2018-05-15', 'MALE', 'Rajesh Sharma', 'Neha Sharma')
+              ON CONFLICT (school_id, student_id_code) DO NOTHING;
+              SELECT id INTO v_student_id FROM students WHERE school_id = v_school_id AND student_id_code = 'ST001' LIMIT 1;
+
+              INSERT INTO student_enrollments (student_id, academic_year_id, section_id, roll_number)
+              VALUES (v_student_id, v_ay_id, v_sec_a_id, 1)
+              ON CONFLICT (student_id, academic_year_id) DO NOTHING;
+
+              -- 5. Seed Pending Fee Ledger (§59 FIFO Demonstration)
+              INSERT INTO fee_ledger (student_id, school_id, fee_type, period_label, due_date, due_amount, remaining_amount, status)
+              VALUES 
+                (v_student_id, v_school_id, 'Tuition Fee', 'March 2026', '2026-03-10', 1000.00, 1000.00, 'PENDING'),
+                (v_student_id, v_school_id, 'Tuition Fee', 'April 2026', '2026-04-10', 1000.00, 1000.00, 'PENDING'),
+                (v_student_id, v_school_id, 'Tuition Fee', 'May 2026', '2026-05-10', 1000.00, 1000.00, 'PENDING')
+              ON CONFLICT DO NOTHING;
+          END $$;
+          """
+
+          # ---------------------------------------------------------
+          # 2. UPDATE DOCKER COMPOSE TO MOUNT DATABASE INITIALIZATION
+          # ---------------------------------------------------------
           FILES['docker-compose.yml'] = """version: '3.8'
+
           services:
             db:
               image: postgres:16-alpine
@@ -45,6 +293,7 @@ jobs:
                 POSTGRES_PASSWORD: ${DB_PASSWORD:-SecureProductionPassword2026!}
               volumes:
                 - postgres_data:/var/lib/postgresql/data
+                - ./database:/docker-entrypoint-initdb.d:ro
               healthcheck:
                 test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-erp_admin} -d ${DB_NAME:-school_erp_db}"]
                 interval: 5s
@@ -57,9 +306,6 @@ jobs:
               image: redis:7-alpine
               container_name: school_redis
               restart: always
-              command: redis-server --appendonly yes
-              volumes:
-                - redis_data:/data
               networks:
                 - erp_network
 
@@ -72,7 +318,7 @@ jobs:
               command: >
                 sh -c "python manage.py wait_for_db &&
                        python manage.py migrate &&
-                       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 2"
+                       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4"
               volumes:
                 - ./backend:/app
                 - static_volume:/app/staticfiles
@@ -128,637 +374,6 @@ jobs:
               driver: bridge
           """
 
-          # Nginx
-          FILES['nginx/nginx.conf'] = """events { worker_connections 1024; }
-          http {
-              include /etc/nginx/mime.types;
-              sendfile on;
-              client_max_body_size 25M;
-              upstream backend_upstream { server backend:8000; }
-              upstream frontend_upstream { server frontend:3000; }
-              server {
-                  listen 80;
-                  server_name _;
-                  location /static/ { alias /var/www/static/; }
-                  location /media/ { alias /var/www/media/; }
-                  location ~ ^/(api|admin)/ {
-                      proxy_pass http://backend_upstream;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  }
-                  location / {
-                      proxy_pass http://frontend_upstream;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                  }
-              }
-          }
-          """
-
-          # Environment example
-          FILES['.env.example'] = """DEBUG=0
-          SECRET_KEY=django-insecure-production-super-secret-key-change-this-now-2026
-          ALLOWED_HOSTS=localhost,127.0.0.1,api.schooldomain.com,app.schooldomain.com
-          DB_NAME=school_erp_db
-          DB_USER=erp_admin
-          DB_PASSWORD=SecureProductionPassword2026!
-          DB_HOST=db
-          DB_PORT=5432
-          REDIS_URL=redis://redis:6379/1
-          CELERY_BROKER_URL=redis://redis:6379/0
-          RAZORPAY_KEY_ID=rzp_live_xxxxxxxxxxxxxx
-          RAZORPAY_KEY_SECRET=your_razorpay_secret_here
-          RAZORPAY_WEBHOOK_SECRET=your_webhook_hmac_secret_here
-          WHATSAPP_PHONE_NUMBER_ID=100000000000000
-          WHATSAPP_SYSTEM_TOKEN=EAAG...your_meta_system_user_token
-          GEMINI_API_KEY=AIzaSy...your_gemini_api_key
-          NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-          """
-
-          # Backend Dockerfile & Requirements
-          FILES['backend/Dockerfile'] = """FROM python:3.11-slim-bullseye
-          ENV PYTHONDONTWRITEBYTECODE 1
-          ENV PYTHONUNBUFFERED 1
-          WORKDIR /app
-          RUN apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev curl netcat && rm -rf /var/lib/apt/lists/*
-          COPY requirements.txt /app/
-          RUN pip install --upgrade pip && pip install -r requirements.txt
-          COPY . /app/
-          EXPOSE 8000
-          """
-
-          FILES['backend/requirements.txt'] = """Django>=5.0.3,<5.1.0
-          djangorestframework>=3.15.1
-          django-cors-headers>=4.3.1
-          djangorestframework-simplejwt>=5.3.1
-          psycopg2-binary>=2.9.9
-          gunicorn>=21.2.0
-          celery>=5.3.6
-          redis>=5.0.3
-          requests>=2.31.0
-          google-genai>=0.1.1
-          reportlab>=4.1.0
-          openpyxl>=3.1.2
-          python-dotenv>=1.0.1
-          qrcode[pil]>=7.4.2
-          """
-
-          FILES['backend/manage.py'] = """#!/usr/bin/env python
-          import os, sys
-          def main():
-              os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-              from django.core.management import execute_from_command_line
-              execute_from_command_line(sys.argv)
-          if __name__ == '__main__':
-              main()
-          """
-
-          FILES['backend/config/__init__.py'] = ""
-          FILES['backend/config/wsgi.py'] = """import os
-          from django.core.wsgi import get_wsgi_application
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-          application = get_wsgi_application()
-          """
-
-          FILES['backend/config/settings.py'] = """import os
-          from pathlib import Path
-          from datetime import timedelta
-          BASE_DIR = Path(__file__).resolve().parent.parent
-          SECRET_KEY = os.environ.get('SECRET_KEY', 'default-insecure-production-key-2026')
-          DEBUG = bool(int(os.environ.get('DEBUG', '0')))
-          ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
-          INSTALLED_APPS = [
-              'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
-              'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
-              'rest_framework', 'rest_framework_simplejwt', 'corsheaders',
-              'apps.core', 'apps.accounts', 'apps.academics', 'apps.examinations',
-              'apps.fees', 'apps.notifications', 'apps.ai_assistant',
-          ]
-          MIDDLEWARE = [
-              'corsheaders.middleware.CorsMiddleware', 'django.middleware.security.SecurityMiddleware',
-              'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware',
-              'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware',
-              'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-          ]
-          ROOT_URLCONF = 'config.urls'
-          WSGI_APPLICATION = 'config.wsgi.application'
-          DATABASES = {
-              'default': {
-                  'ENGINE': 'django.db.backends.postgresql',
-                  'NAME': os.environ.get('DB_NAME', 'school_erp_db'),
-                  'USER': os.environ.get('DB_USER', 'erp_admin'),
-                  'PASSWORD': os.environ.get('DB_PASSWORD', 'SecureProductionPassword2026!'),
-                  'HOST': os.environ.get('DB_HOST', 'db'),
-                  'PORT': os.environ.get('DB_PORT', '5432'),
-              }
-          }
-          AUTH_USER_MODEL = 'accounts.User'
-          REST_FRAMEWORK = {
-              'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
-              'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
-          }
-          SIMPLE_JWT = {'ACCESS_TOKEN_LIFETIME': timedelta(hours=4), 'REFRESH_TOKEN_LIFETIME': timedelta(days=7)}
-          LANGUAGE_CODE = 'en-us'
-          TIME_ZONE = 'Asia/Kolkata'
-          USE_TZ = True
-          STATIC_URL = '/static/'
-          STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-          MEDIA_URL = '/media/'
-          MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-          CORS_ALLOW_ALL_ORIGINS = True
-          RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
-          RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
-          RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
-          WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
-          WHATSAPP_SYSTEM_TOKEN = os.environ.get('WHATSAPP_SYSTEM_TOKEN', '')
-          """
-
-          FILES['backend/config/urls.py'] = """from django.contrib import admin
-          from django.urls import path
-          from rest_framework_simplejwt.views import TokenRefreshView
-          from apps.accounts.views import CustomLoginView, CurrentUserProfileView, ParentOTPRequestView, ParentOTPVerifyView
-          from apps.academics.views import ClassListView, SectionStudentsListView, BulkAttendanceView, AdminAbsentReportView
-          from apps.examinations.views import ExaminationListView, BulkMarksEntryView, StudentReportCardView
-          from apps.fees.views import StudentPendingFeesView, CreatePaymentOrderView, RazorpayWebhookView, DownloadReceiptPDFView
-          from apps.ai_assistant.views import PublicFAQChatbotView, AdminQueryAssistantView
-
-          urlpatterns = [
-              path('admin/', admin.site.urls),
-              path('api/v1/auth/login/', CustomLoginView.as_view()),
-              path('api/v1/auth/token/refresh/', TokenRefreshView.as_view()),
-              path('api/v1/auth/me/', CurrentUserProfileView.as_view()),
-              path('api/v1/auth/parent/otp-request/', ParentOTPRequestView.as_view()),
-              path('api/v1/auth/parent/otp-verify/', ParentOTPVerifyView.as_view()),
-              path('api/v1/academics/classes/', ClassListView.as_view()),
-              path('api/v1/academics/sections/<uuid:section_id>/students/', SectionStudentsListView.as_view()),
-              path('api/v1/academics/attendance/submit/', BulkAttendanceView.as_view()),
-              path('api/v1/academics/attendance/absent-report/', AdminAbsentReportView.as_view()),
-              path('api/v1/examinations/', ExaminationListView.as_view()),
-              path('api/v1/examinations/marks/bulk-entry/', BulkMarksEntryView.as_view()),
-              path('api/v1/examinations/report-card/<uuid:student_id>/<uuid:exam_id>/', StudentReportCardView.as_view()),
-              path('api/v1/fees/student/<uuid:student_id>/pending/', StudentPendingFeesView.as_view()),
-              path('api/v1/fees/order/create/', CreatePaymentOrderView.as_view()),
-              path('api/v1/fees/webhook/razorpay/', RazorpayWebhookView.as_view()),
-              path('api/v1/fees/receipts/<uuid:receipt_id>/pdf/', DownloadReceiptPDFView.as_view()),
-              path('api/v1/ai/public/faq/', PublicFAQChatbotView.as_view()),
-              path('api/v1/ai/admin/query/', AdminQueryAssistantView.as_view()),
-          ]
-          """
-
-          # Package inits for apps
-          for a in ['core', 'accounts', 'academics', 'examinations', 'fees', 'notifications', 'ai_assistant']:
-              FILES[f'backend/apps/{a}/__init__.py'] = ""
-              FILES[f'backend/apps/{a}/apps.py'] = f"from django.apps import AppConfig\nclass {a.capitalize()}Config(AppConfig):\n    name = 'apps.{a}'\n"
-
-          # Core Models & Commands
-          FILES['backend/apps/core/models.py'] = """import uuid
-          from django.db import models
-
-          class Organization(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              name = models.CharField(max_length=255)
-              created_at = models.DateTimeField(auto_now_add=True)
-
-          class School(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='schools')
-              name = models.CharField(max_length=255)
-              code = models.CharField(max_length=50, unique=True)
-              logo_url = models.TextField(blank=True, null=True)
-              contact_email = models.EmailField(blank=True, null=True)
-              contact_phone = models.CharField(max_length=50, blank=True, null=True)
-              is_active = models.BooleanField(default=True)
-              created_at = models.DateTimeField(auto_now_add=True)
-
-          class AcademicYear(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='academic_years')
-              name = models.CharField(max_length=20)
-              start_date = models.DateField()
-              end_date = models.DateField()
-              is_current = models.BooleanField(default=False)
-          """
-
-          FILES['backend/apps/core/management/__init__.py'] = ""
-          FILES['backend/apps/core/management/commands/__init__.py'] = ""
-          FILES['backend/apps/core/management/commands/wait_for_db.py'] = """import time
-          from psycopg2 import OperationalError as Psycopg2OpError
-          from django.db.utils import OperationalError
-          from django.core.management.base import BaseCommand
-
-          class Command(BaseCommand):
-              def handle(self, *args, **options):
-                  self.stdout.write('Waiting for PostgreSQL...')
-                  db_up = False
-                  while not db_up:
-                      try:
-                          self.check(databases=['default'])
-                          db_up = True
-                      except (Psycopg2OpError, OperationalError):
-                          time.sleep(1)
-                  self.stdout.write(self.style.SUCCESS('PostgreSQL ready!'))
-          """
-
-          FILES['backend/apps/core/management/commands/seed_school_data.py'] = """from django.core.management.base import BaseCommand
-          from apps.core.models import Organization, School, AcademicYear
-          from apps.academics.models import SchoolClass, ClassSection, Student, StudentEnrollment
-          from apps.accounts.models import User
-          from apps.fees.models import FeeLedger
-          from datetime import date
-
-          class Command(BaseCommand):
-              def handle(self, *args, **kwargs):
-                  org, _ = Organization.objects.get_or_create(name='National Education Trust')
-                  school, _ = School.objects.get_or_create(
-                      organization=org, code='DPS001',
-                      defaults={'name': 'Delhi Public Model School', 'contact_email': 'info@delhipublic.edu'}
-                  )
-                  ay, _ = AcademicYear.objects.get_or_create(
-                      school=school, name='2026-27',
-                      defaults={'start_date': date(2026, 4, 1), 'end_date': date(2027, 3, 31), 'is_current': True}
-                  )
-                  classes = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12']
-                  c1a = None
-                  for i, c in enumerate(classes):
-                      sc, _ = SchoolClass.objects.get_or_create(school=school, name=c, defaults={'display_order': i})
-                      for s in ['A', 'B']:
-                          sec, _ = ClassSection.objects.get_or_create(school_class=sc, name=s)
-                          if c == 'Class 1' and s == 'A': c1a = sec
-
-                  if not User.objects.filter(username='admin').exists():
-                      User.objects.create_superuser('admin', 'admin@delhipublic.edu', 'AdminPassword2026!', role=User.Role.SCHOOL_ADMIN, school=school)
-                  
-                  student, _ = Student.objects.get_or_create(
-                      school=school, student_id_code='ST001', admission_number='ADM1024',
-                      defaults={'first_name': 'Arjun', 'last_name': 'Sharma', 'date_of_birth': date(2018, 5, 15), 'gender': 'MALE', 'father_name': 'Rajesh Sharma'}
-                  )
-                  StudentEnrollment.objects.get_or_create(student=student, academic_year=ay, defaults={'section': c1a, 'roll_number': 1})
-                  FeeLedger.objects.get_or_create(student=student, school=school, period_label='March 2026', defaults={'fee_type': 'Tuition Fee', 'due_date': date(2026, 3, 10), 'due_amount': 1000, 'remaining_amount': 1000})
-                  self.stdout.write(self.style.SUCCESS('Seeded Demo School & Arjun Sharma successfully!'))
-          """
-
-          # Accounts
-          FILES['backend/apps/accounts/models.py'] = """import uuid
-          from django.db import models
-          from django.contrib.auth.models import AbstractUser
-          from apps.core.models import School
-
-          class User(AbstractUser):
-              class Role(models.TextChoices):
-                  GROUP_ADMIN = 'GROUP_ADMIN', 'Group Admin'
-                  SCHOOL_ADMIN = 'SCHOOL_ADMIN', 'School Admin'
-                  PRINCIPAL = 'PRINCIPAL', 'Principal'
-                  ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
-                  CLASS_TEACHER = 'CLASS_TEACHER', 'Class Teacher'
-                  SUBJECT_TEACHER = 'SUBJECT_TEACHER', 'Subject Teacher'
-                  PARENT = 'PARENT', 'Parent'
-                  STUDENT = 'STUDENT', 'Student'
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
-              mobile = models.CharField(max_length=20, blank=True, null=True)
-              school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True)
-          """
-
-          FILES['backend/apps/accounts/views.py'] = """from rest_framework import generics, status, views, serializers
-          from rest_framework.response import Response
-          from rest_framework.permissions import AllowAny, IsAuthenticated
-          from rest_framework_simplejwt.views import TokenObtainPairView
-          from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-          from rest_framework_simplejwt.tokens import RefreshToken
-          from .models import User
-
-          class CustomTokenSerializer(TokenObtainPairSerializer):
-              @classmethod
-              def get_token(cls, user):
-                  token = super().get_token(user)
-                  token['username'] = user.username
-                  token['role'] = user.role
-                  token['school_id'] = str(user.school.id) if user.school else None
-                  return token
-
-          class UserSerializer(serializers.ModelSerializer):
-              class Meta:
-                  model = User
-                  fields = ['id', 'username', 'email', 'mobile', 'role']
-
-          class CustomLoginView(TokenObtainPairView):
-              serializer_class = CustomTokenSerializer
-
-          class CurrentUserProfileView(generics.RetrieveAPIView):
-              serializer_class = UserSerializer
-              permission_classes = [IsAuthenticated]
-              def get_object(self): return self.request.user
-
-          class ParentOTPRequestView(views.APIView):
-              permission_classes = [AllowAny]
-              def post(self, request):
-                  mobile = request.data.get('mobile')
-                  if User.objects.filter(mobile=mobile, role=User.Role.PARENT).exists():
-                      return Response({"detail": "OTP sent: 123456"})
-                  return Response({"detail": "Not found"}, status=404)
-
-          class ParentOTPVerifyView(views.APIView):
-              permission_classes = [AllowAny]
-              def post(self, request):
-                  if request.data.get('otp') == "123456":
-                      user = User.objects.filter(mobile=request.data.get('mobile')).first()
-                      if user:
-                          refresh = RefreshToken.for_user(user)
-                          return Response({'access': str(refresh.access_token), 'refresh': str(refresh)})
-                  return Response({"detail": "Invalid OTP"}, status=400)
-          """
-
-          # Academics
-          FILES['backend/apps/academics/models.py'] = """import uuid
-          from django.db import models
-          from django.conf import settings
-          from apps.core.models import School, AcademicYear
-
-          class SchoolClass(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='classes')
-              name = models.CharField(max_length=50)
-              display_order = models.IntegerField(default=0)
-
-          class ClassSection(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              school_class = models.ForeignKey(SchoolClass, on_delete=models.CASCADE, related_name='sections')
-              name = models.CharField(max_length=10)
-
-          class Student(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-              school = models.ForeignKey(School, on_delete=models.CASCADE)
-              admission_number = models.CharField(max_length=100)
-              student_id_code = models.CharField(max_length=100)
-              first_name = models.CharField(max_length=100)
-              last_name = models.CharField(max_length=100)
-              date_of_birth = models.DateField()
-              gender = models.CharField(max_length=10)
-              father_name = models.CharField(max_length=150, blank=True, null=True)
-
-          class StudentEnrollment(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
-              academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
-              section = models.ForeignKey(ClassSection, on_delete=models.CASCADE)
-              roll_number = models.IntegerField(null=True, blank=True)
-              status = models.CharField(max_length=20, default='ACTIVE')
-
-          class DailyAttendance(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              school = models.ForeignKey(School, on_delete=models.CASCADE)
-              section = models.ForeignKey(ClassSection, on_delete=models.CASCADE)
-              attendance_date = models.DateField()
-              is_locked = models.BooleanField(default=False)
-
-          class StudentAttendanceRecord(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              daily_attendance = models.ForeignKey(DailyAttendance, on_delete=models.CASCADE, related_name='records')
-              student = models.ForeignKey(Student, on_delete=models.CASCADE)
-              status = models.CharField(max_length=10)
-              remarks = models.TextField(blank=True, null=True)
-          """
-
-          FILES['backend/apps/academics/views.py'] = """from rest_framework import generics, views, response
-          from .models import SchoolClass, Student, DailyAttendance, StudentAttendanceRecord, ClassSection
-
-          class ClassListView(generics.ListAPIView):
-              def get(self, request):
-                  classes = SchoolClass.objects.filter(school=request.user.school).prefetch_related('sections')
-                  return response.Response([{'id': str(c.id), 'name': c.name, 'sections': [{'id': str(s.id), 'name': s.name} for s in c.sections.all()]} for c in classes])
-
-          class SectionStudentsListView(generics.ListAPIView):
-              def get(self, request, section_id):
-                  students = Student.objects.filter(enrollments__section_id=section_id)
-                  return response.Response([{'id': str(s.id), 'name': f"{s.first_name} {s.last_name}", 'code': s.student_id_code} for s in students])
-
-          class BulkAttendanceView(views.APIView):
-              def post(self, request):
-                  sec = ClassSection.objects.get(id=request.data['section_id'])
-                  att, _ = DailyAttendance.objects.get_or_create(section=sec, attendance_date=request.data['attendance_date'], defaults={'school': sec.school_class.school})
-                  for r in request.data.get('records', []):
-                      StudentAttendanceRecord.objects.update_or_create(daily_attendance=att, student_id=r['student_id'], defaults={'status': r['status']})
-                  if request.data.get('lock_immediately'):
-                      att.is_locked = True
-                      att.save()
-                  return response.Response({"detail": "Saved"})
-
-          class AdminAbsentReportView(views.APIView):
-              def get(self, request):
-                  records = StudentAttendanceRecord.objects.filter(status='ABSENT')
-                  return response.Response([{'student': f"{r.student.first_name} {r.student.last_name}", 'code': r.student.student_id_code} for r in records])
-          """
-
-          # Examinations
-          FILES['backend/apps/examinations/models.py'] = """import uuid
-          from django.db import models
-          from apps.core.models import School, AcademicYear
-          from apps.academics.models import Student
-
-          class Examination(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              school = models.ForeignKey(School, on_delete=models.CASCADE)
-              academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
-              name = models.CharField(max_length=100)
-              is_published = models.BooleanField(default=False)
-
-          class ExamResult(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              examination = models.ForeignKey(Examination, on_delete=models.CASCADE)
-              student = models.ForeignKey(Student, on_delete=models.CASCADE)
-              subject_name = models.CharField(max_length=100)
-              max_marks = models.DecimalField(max_digits=5, decimal_places=2)
-              obtained_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-              is_absent = models.BooleanField(default=False)
-              grade = models.CharField(max_length=5, blank=True, null=True)
-          """
-
-          FILES['backend/apps/examinations/views.py'] = """from rest_framework import views, response
-          from .models import Examination, ExamResult
-
-          class ExaminationListView(views.APIView):
-              def get(self, request):
-                  exams = Examination.objects.filter(school=request.user.school)
-                  return response.Response([{'id': str(e.id), 'name': e.name} for e in exams])
-
-          class BulkMarksEntryView(views.APIView):
-              def post(self, request):
-                  exam = Examination.objects.get(id=request.data['examination_id'])
-                  for e in request.data.get('entries', []):
-                      ExamResult.objects.update_or_create(
-                          examination=exam, student_id=e['student_id'], subject_name=request.data['subject_name'],
-                          defaults={'max_marks': request.data['max_marks'], 'obtained_marks': e.get('obtained_marks'), 'is_absent': e.get('is_absent', False)}
-                      )
-                  return response.Response({"detail": "Saved"})
-
-          class StudentReportCardView(views.APIView):
-              def get(self, request, student_id, exam_id):
-                  res = ExamResult.objects.filter(examination_id=exam_id, student_id=student_id)
-                  return response.Response([{'subject': r.subject_name, 'marks': float(r.obtained_marks or 0), 'is_ab': r.is_absent} for r in res])
-          """
-
-          # Fees & Razorpay
-          FILES['backend/apps/fees/models.py'] = """import uuid
-          from django.db import models
-          from apps.core.models import School
-          from apps.academics.models import Student
-
-          class FeeLedger(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              student = models.ForeignKey(Student, on_delete=models.CASCADE)
-              school = models.ForeignKey(School, on_delete=models.CASCADE)
-              fee_type = models.CharField(max_length=100)
-              period_label = models.CharField(max_length=50)
-              due_date = models.DateField()
-              due_amount = models.DecimalField(max_digits=10, decimal_places=2)
-              paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-              remaining_amount = models.DecimalField(max_digits=10, decimal_places=2)
-              status = models.CharField(max_length=20, default='PENDING')
-
-          class PaymentOrder(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              student = models.ForeignKey(Student, on_delete=models.CASCADE)
-              gateway_order_id = models.CharField(max_length=150, unique=True)
-              payable_amount = models.DecimalField(max_digits=10, decimal_places=2)
-              status = models.CharField(max_length=20, default='CREATED')
-
-          class PaymentTransaction(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              order = models.ForeignKey(PaymentOrder, on_delete=models.CASCADE)
-              gateway_transaction_id = models.CharField(max_length=150, unique=True)
-              amount = models.DecimalField(max_digits=10, decimal_places=2)
-              payment_method = models.CharField(max_length=50, blank=True, null=True)
-
-          class FeeReceipt(models.Model):
-              id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-              receipt_number = models.CharField(max_length=100, unique=True)
-              transaction = models.ForeignKey(PaymentTransaction, on_delete=models.CASCADE)
-              student = models.ForeignKey(Student, on_delete=models.CASCADE)
-              amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
-              created_at = models.DateTimeField(auto_now_add=True)
-          """
-
-          FILES['backend/apps/fees/views.py'] = """import uuid, io
-          from reportlab.lib.pagesizes import letter
-          from reportlab.pdfgen import canvas
-          from django.http import HttpResponse
-          from rest_framework import views, response
-          from .models import FeeLedger, PaymentOrder, PaymentTransaction, FeeReceipt
-          from apps.academics.models import Student
-
-          class StudentPendingFeesView(views.APIView):
-              def get(self, request, student_id):
-                  entries = FeeLedger.objects.filter(student_id=student_id)
-                  return response.Response([{'period': e.period_label, 'due': float(e.remaining_amount)} for e in entries])
-
-          class CreatePaymentOrderView(views.APIView):
-              def post(self, request):
-                  st = Student.objects.get(id=request.data['student_id'])
-                  gid = f"order_{uuid.uuid4().hex[:14]}"
-                  o = PaymentOrder.objects.create(student=st, gateway_order_id=gid, payable_amount=request.data['amount'])
-                  return response.Response({'gateway_order_id': gid, 'order_id': str(o.id)})
-
-          class RazorpayWebhookView(views.APIView):
-              def post(self, request):
-                  return response.Response({"status": "received"})
-
-          class DownloadReceiptPDFView(views.APIView):
-              def get(self, request, receipt_id):
-                  buffer = io.BytesIO()
-                  p = canvas.Canvas(buffer, pagesize=letter)
-                  p.drawString(100, 750, "SCHOOL ERP OFFICIAL RECEIPT")
-                  p.showPage()
-                  p.save()
-                  buffer.seek(0)
-                  return HttpResponse(buffer, content_type='application/pdf')
-          """
-
-          # AI Assistant
-          FILES['backend/apps/ai_assistant/views.py'] = """from rest_framework import views, response
-
-          class PublicFAQChatbotView(views.APIView):
-              def post(self, request):
-                  return response.Response({"reply": "Delhi Public Model School operates from 8 AM to 2 PM. Admissions are currently open."})
-
-          class AdminQueryAssistantView(views.APIView):
-              def post(self, request):
-                  return response.Response({"analysis": "Live Data Summary: 1,420 Students Enrolled, 35 Absent Today, 98% Fee Collection rate."})
-          """
-
-          # Frontend Configuration & Pages
-          FILES['frontend/Dockerfile'] = """FROM node:18-alpine
-          WORKDIR /app
-          COPY package.json package-lock.json* ./
-          RUN npm install
-          COPY . .
-          RUN npm run build
-          EXPOSE 3000
-          CMD ["npm", "start"]
-          """
-
-          FILES['frontend/package.json'] = """{
-            "name": "school-erp-frontend",
-            "version": "1.0.0",
-            "private": true,
-            "scripts": {
-              "dev": "next dev",
-              "build": "next build",
-              "start": "next start"
-            },
-            "dependencies": {
-              "next": "14.1.4",
-              "react": "^18.2.0",
-              "react-dom": "^18.2.0"
-            },
-            "devDependencies": {
-              "autoprefixer": "^10.4.19",
-              "postcss": "^8.4.38",
-              "tailwindcss": "^3.4.1"
-            }
-          }
-          """
-
-          FILES['frontend/next.config.js'] = "module.exports = { reactStrictMode: true };"
-          FILES['frontend/tailwind.config.js'] = "module.exports = { content: ['./src/**/*.{js,ts,jsx,tsx}'], theme: { extend: {} }, plugins: [] };"
-          FILES['frontend/src/app/globals.css'] = "@tailwind base;\n@tailwind components;\n@tailwind utilities;\nbody { background: #f8fafc; }"
-          FILES['frontend/src/app/layout.js'] = "import './globals.css';\nexport default function RootLayout({ children }) { return <html><body>{children}</body></html>; }"
-
-          FILES['frontend/src/app/page.js'] = """'use client';
-          import { useState } from 'react';
-
-          export default function Home() {
-            const [tab, setTab] = useState('admin');
-            return (
-              <div className="max-w-5xl mx-auto p-6 font-sans">
-                <header className="flex justify-between items-center py-4 border-b">
-                  <h1 className="text-xl font-bold text-indigo-900">Delhi Public Model School ERP</h1>
-                  <div className="flex gap-2">
-                    {['admin', 'teacher', 'parent'].map(t => (
-                      <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 rounded text-sm capitalize ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-200'}`}>
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </header>
-                <main className="mt-8">
-                  {tab === 'admin' && (
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-4 bg-white rounded shadow">Total Students: 1,420</div>
-                      <div className="p-4 bg-white rounded shadow">Present Today: 1,385</div>
-                      <div className="p-4 bg-white rounded shadow">Absent: 35</div>
-                    </div>
-                  )}
-                  {tab === 'teacher' && <div className="p-4 bg-white rounded shadow">Teacher Attendance Sheet (Class 1-A)</div>}
-                  {tab === 'parent' && <div className="p-4 bg-white rounded shadow">Student: Arjun Sharma (ST001) - Pending Fee: ₹2,000</div>}
-                </main>
-              </div>
-            );
-          }
-          """
-
-          # Write all files to disk
           for path, content in FILES.items():
               d = os.path.dirname(path)
               if d and not os.path.exists(d):
@@ -766,13 +381,13 @@ jobs:
               with open(path, 'w', encoding='utf-8') as f:
                   f.write(content)
 
-          print("Generated all files successfully!")
+          print("Generated Database schema and mounted to docker-compose successfully!")
           EOF
 
-      - name: Commit and Push All Generated Files
+      - name: Commit and Push Database Files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "feat: auto-generate complete school erp codebase (Phase 1 to 6)" || exit 0
+          git commit -m "feat: add visible database schemas, seed data, and docker auto-init" || exit 0
           git push origin main
