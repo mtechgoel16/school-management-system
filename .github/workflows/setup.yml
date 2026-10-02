@@ -73,6 +73,7 @@ jobs:
               window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
+            // Global Breadcrumbs Trail
             const renderBreadcrumbs = () => {
               if (currentPath === '/') return null;
               const segments = currentPath.split('/').filter(Boolean);
@@ -143,37 +144,32 @@ jobs:
                         <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-700">
                           <button onClick={() => navigateTo('/')} className="hover:text-indigo-600">Home</button>
                           
-                          {/* About Dropdown with zero-gap bridge */}
+                          {/* About Dropdown */}
                           <div className="relative py-2 group" onMouseEnter={() => setAboutDropdown(true)} onMouseLeave={() => setAboutDropdown(false)}>
                             <button onClick={() => navigateTo('/about')} className="hover:text-indigo-600 flex items-center gap-1">About Us ▼</button>
                             {aboutDropdown && (
-                              <div className="absolute left-0 top-full pt-1 z-50 transition-all duration-200">
-                                <div className="w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 text-xs">
-                                  <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 hover:bg-slate-50 font-bold text-indigo-950">🏛️ About Us Page Overview (Section 9)</button>
-                                  <hr className="my-1 border-slate-100" />
-                                  <button onClick={() => navigateTo('/about/infrastructure')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">🏫 School Infrastructure (Section 11)</button>
-                                  <button onClick={() => navigateTo('/about/facilities')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">🔬 Facilities (Section 12)</button>
-                                  <button onClick={() => navigateTo('/about/achievements')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">🏆 Achievements (Section 13)</button>
-                                  <button onClick={() => navigateTo('/about/rules')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">📜 School Rules (Section 14)</button>
-                                  <button onClick={() => navigateTo('/about/faculty')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">👩‍🏫 Faculty Directory (Section 15)</button>
-                                  <button onClick={() => navigateTo('/about/gallery')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700">🖼️ Campus Gallery (Section 16)</button>
-                                </div>
+                              <div className="absolute left-0 mt-1 w-64 bg-white border rounded-2xl shadow-2xl py-2 text-xs">
+                                <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Overview (Section 9)</button>
+                                <button onClick={() => navigateTo('/about/infrastructure')} className="w-full text-left px-4 py-2 hover:bg-slate-50">School Infrastructure (Section 11)</button>
+                                <button onClick={() => navigateTo('/about/facilities')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Facilities (Section 12)</button>
+                                <button onClick={() => navigateTo('/about/achievements')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Achievements (Section 13)</button>
+                                <button onClick={() => navigateTo('/about/rules')} className="w-full text-left px-4 py-2 hover:bg-slate-50">School Rules (Section 14)</button>
+                                <button onClick={() => navigateTo('/about/faculty')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Faculty Directory (Section 15)</button>
+                                <button onClick={() => navigateTo('/about/gallery')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Media Gallery (Section 16)</button>
                               </div>
                             )}
                           </div>
 
                           <button onClick={() => navigateTo('/blog')} className="hover:text-indigo-600">Blog</button>
 
-                          {/* Resources Dropdown with zero-gap bridge */}
+                          {/* Resources Dropdown */}
                           <div className="relative py-2 group" onMouseEnter={() => setResourcesDropdown(true)} onMouseLeave={() => setResourcesDropdown(false)}>
                             <button onClick={() => navigateTo('/resources/academics')} className="hover:text-indigo-600 flex items-center gap-1">Resources ▼</button>
                             {resourcesDropdown && (
-                              <div className="absolute left-0 top-full pt-1 z-50 transition-all duration-200">
-                                <div className="w-56 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 text-xs">
-                                  <button onClick={() => navigateTo('/resources/academics')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 font-bold">📚 Academics Framework (Section 17)</button>
-                                  <button onClick={() => navigateTo('/resources/campus-life')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 font-bold">🌳 Campus Life (Section 11)</button>
-                                  <button onClick={() => navigateTo('/resources/examinations')} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 font-bold">📝 Examinations (Section 42)</button>
-                                </div>
+                              <div className="absolute left-0 mt-1 w-56 bg-white border rounded-2xl shadow-2xl py-2 text-xs">
+                                <button onClick={() => navigateTo('/resources/academics')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Academics Framework (Section 17)</button>
+                                <button onClick={() => navigateTo('/resources/campus-life')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Campus Life (Section 11)</button>
+                                <button onClick={() => navigateTo('/resources/examinations')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Examinations (Section 42)</button>
                               </div>
                             )}
                           </div>
@@ -199,32 +195,28 @@ jobs:
                   {/* Global Footer */}
                   <footer className="bg-indigo-950 text-slate-300 py-12 px-6 border-t border-indigo-900 text-xs">
                     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 bg-indigo-900 rounded-xl flex items-center justify-center text-white font-black text-lg">DP</div>
+                          <div className="w-8 h-8 bg-indigo-900 rounded-lg flex items-center justify-center text-white font-bold">DP</div>
                           <h4 className="text-white font-bold text-sm">Delhi Public Model School</h4>
                         </div>
-                        <p className="text-amber-400 font-bold uppercase tracking-wider text-xs">Discipline • Excellence • Integrity</p>
+                        <p className="text-amber-400 font-bold uppercase tracking-wider text-[10px]">Discipline • Excellence • Integrity</p>
                         <p className="text-slate-400">CBSE Affiliated Senior Secondary Institution committed to values, athletic distinction, and academic rigor.</p>
-                        <div className="flex gap-3">
-                          <a href="https://facebook.com" className="hover:text-white">Facebook</a>
-                          <a href="https://instagram.com" className="hover:text-white">Instagram</a>
-                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <h4 className="text-white font-bold text-sm">About Us Subpages</h4>
+                      <div className="space-y-1">
+                        <h4 className="text-white font-bold text-sm mb-2">About Us</h4>
                         <p onClick={() => navigateTo('/about/infrastructure')} className="hover:text-white cursor-pointer">Infrastructure</p>
                         <p onClick={() => navigateTo('/about/facilities')} className="hover:text-white cursor-pointer">Facilities</p>
-                        <p onClick={() => navigateTo('/about/achievements')} className="hover:text-white cursor-pointer">Achievements</p>
+                        <p onClick={() => navigateTo('/about/rules')} className="hover:text-white cursor-pointer">Rules & Code</p>
                       </div>
-                      <div className="space-y-2">
-                        <h4 className="text-white font-bold text-sm">Resources</h4>
+                      <div className="space-y-1">
+                        <h4 className="text-white font-bold text-sm mb-2">Resources</h4>
                         <p onClick={() => navigateTo('/resources/academics')} className="hover:text-white cursor-pointer">Academics</p>
                         <p onClick={() => navigateTo('/resources/examinations')} className="hover:text-white cursor-pointer">Examinations</p>
                         <p onClick={() => navigateTo('/blog')} className="hover:text-white cursor-pointer">School Blog</p>
                       </div>
-                      <div className="space-y-3">
-                        <h4 className="text-white font-bold text-sm">Contact Campus</h4>
+                      <div className="space-y-2">
+                        <h4 className="text-white font-bold text-sm mb-2">Contact</h4>
                         <p>📍 Sector 14, Knowledge Corridor, New Delhi 110001</p>
                         <p>📞 Phone: +91 98765 43210</p>
                       </div>
@@ -243,11 +235,12 @@ jobs:
           export default function HomePage() {
             return (
               <div className="space-y-16 py-8">
+                {/* 1. Hero Banner */}
                 <section className="bg-gradient-to-r from-indigo-900 to-indigo-950 rounded-3xl p-12 text-white grid grid-cols-1 lg:grid-cols-2 gap-8 items-center shadow-xl">
                   <div className="space-y-6">
                     <span className="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-amber-400/30">Admissions Open 2026–27</span>
                     <h2 className="text-3xl sm:text-5xl font-black leading-tight">Shaping Tomorrow's Visionaries With Excellence</h2>
-                    <p className="text-slate-300 text-sm">CBSE Affiliated Senior Secondary Institution integrating academic rigor with smart classrooms and global ERP connectivity.</p>
+                    <p className="text-slate-300 text-sm"> CBSe Affiliated Senior Secondary Institution integrating academic rigor with smart digital classrooms, state-of-the-art labs and global ERP connectivity.</p>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur space-y-4">
                     <h3 className="text-lg font-bold text-amber-400 border-b pb-2">Institutional Notice Board</h3>
@@ -257,13 +250,26 @@ jobs:
                     </div>
                   </div>
                 </section>
+
+                {/* 2. Welcome About School */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-black text-slate-900">Welcome to Delhi Public Model School</h2>
+                    <p className="text-slate-600 text-sm leading-relaxed">Providing high-standard CBSE secondary education with integrated robotics labs, full-size cricket pitch, high-speed computer center, and dynamic GPS bus fleet tracking systems.</p>
+                  </div>
+                  <div className="bg-indigo-900 text-white p-8 rounded-3xl shadow-lg">
+                    <h3 className="text-lg font-bold">Principal Note</h3>
+                    <p className="text-slate-300 text-xs italic mt-2">"True schooling is not simply about academic syllabus, but training the mind to critically think and innovate."</p>
+                    <p className="text-xs font-bold text-amber-400 mt-4">— Dr. V. K. Sharma, Principal</p>
+                  </div>
+                </section>
               </div>
             );
           }
           """
 
           # -------------------------------------------------------------
-          # C. ABOUT US PAGE
+          # C. ABOUT US PAGE & DEDICATED SUBPAGES
           # -------------------------------------------------------------
           FILES[f"frontend/src/app/about/page.js"] = """'use client';
           export default function AboutPage() {
@@ -271,7 +277,7 @@ jobs:
               <div className="space-y-12 py-6">
                 <div className="text-center max-w-2xl mx-auto">
                   <h2 className="text-3xl font-black text-indigo-950">About Delhi Public Model School</h2>
-                  <p className="text-slate-500 text-sm mt-2">Nurturing educational merit, ethical values, and technological progress since 2004.</p>
+                  <p className="text-slate-500 text-xs mt-2">Nurturing educational merit, ethical values, and technological progress since 2004.</p>
                 </div>
                 <div className="bg-white p-8 rounded-3xl border shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                   <div className="h-64 w-full overflow-hidden rounded-2xl">
@@ -312,7 +318,7 @@ jobs:
                 <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
                   <h3 className="text-xl font-bold text-indigo-950 border-b pb-2">Send an Inquiry (Section 78)</h3>
                   {submitted ? (
-                    <p className="p-4 bg-emerald-50 text-emerald-800 rounded-xl font-bold text-xs">✓ Inquiry submitted successfully. Admissions desk will contact you.</p>
+                    <p className="p-4 bg-emerald-50 text-emerald-800 rounded-xl font-bold text-xs">✓ Inquiry submitted successfully. Admissions desk will call you.</p>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                       {error && <p className="text-rose-600 text-xs font-bold">{error}</p>}
@@ -342,7 +348,7 @@ jobs:
           """
 
           # -------------------------------------------------------------
-          # E. ADMIN LOGIN & DASHBOARD (STUDENT PROFILE CREATION §23, §24)
+          # E. ADMIN LOGIN & DASHBOARD (Includes STUDENT PROFILE CREATION §23, §24)
           # -------------------------------------------------------------
           FILES[f"frontend/src/app/portal/admin-login/page.js"] = """'use client';
           import { useState } from 'react';
@@ -385,6 +391,7 @@ jobs:
               { id: 'ST001', name: 'Arjun Sharma', class: 'Class 1-A', parent: 'Rajesh Sharma', mobile: '9876543210' }
             ]);
 
+            // Form inputs
             const [name, setName] = useState('');
             const [roll, setRoll] = useState('');
             const [father, setFather] = useState('');
@@ -409,17 +416,19 @@ jobs:
               <div className="space-y-6 py-6">
                 <div className="flex justify-between items-center border-b pb-4">
                   <h2 className="text-2xl font-black text-indigo-950">Administrative Command Center (ERP v4)</h2>
-                  <button onClick={() => setShowCreateStudent(true)} className="px-4 py-2 bg-indigo-900 text-white font-bold text-xs rounded-xl">
+                  <button onClick={() => setShowCreateStudent(true)} className="px-4 py-2 bg-indigo-900 text-white font-bold text-xs rounded-xl hover:bg-indigo-800">
                     ➕ Add New Student Profile (PostgreSQL §23)
                   </button>
                 </div>
 
+                {/* 10 KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   {['TOTAL STUDENTS (1,420)', 'TOTAL FACULTY (68)', 'PRESENT TODAY (1,385)', 'ABSENT TODAY (35)', 'PENDING FEES (₹4,85,000)'].map((k, i) => (
                     <div key={i} className="bg-white p-4 rounded-xl border-l-4 border-indigo-600 shadow-sm font-bold text-slate-800 text-xs">{k}</div>
                   ))}
                 </div>
 
+                {/* Student Roster */}
                 <div className="bg-white p-6 rounded-3xl border shadow-sm">
                   <h3 className="font-bold text-slate-800 mb-3 text-sm">Active Student Roster</h3>
                   <table className="w-full text-xs text-left">
@@ -446,6 +455,7 @@ jobs:
                   </table>
                 </div>
 
+                {/* POP-UP FORM: CREATE STUDENT PROFILE (§23) */}
                 {showCreateStudent && (
                   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <form onSubmit={handleCreateStudent} className="bg-white p-6 rounded-3xl border shadow-2xl max-w-md w-full space-y-4">
@@ -457,7 +467,7 @@ jobs:
                       <input required value={roll} onChange={e => setRoll(e.target.value)} className="w-full p-2 border rounded-xl text-xs bg-slate-50" placeholder="Roll Number" />
                       <input required value={father} onChange={e => setFather(e.target.value)} className="w-full p-2 border rounded-xl text-xs bg-slate-50" placeholder="Father Name" />
                       <input required value={mobile} onChange={e => setMobile(e.target.value)} className="w-full p-2 border rounded-xl text-xs bg-slate-50" placeholder="Parent Mobile" />
-                      <button type="submit" className="w-full py-2.5 bg-indigo-900 text-white font-bold rounded-xl text-xs">Register Profile</button>
+                      <button type="submit" className="w-full py-2.5 bg-indigo-900 text-white font-bold rounded-xl text-xs">Register Profile to Database</button>
                     </form>
                   </div>
                 )}
@@ -467,7 +477,7 @@ jobs:
           """
 
           # -------------------------------------------------------------
-          # F. STUDENT PORTAL & ACCORDION RESULTS
+          # F. STUDENT PORTAL
           # -------------------------------------------------------------
           FILES[f"frontend/src/app/portal/student-login/page.js"] = """'use client';
           import { useState } from 'react';
@@ -540,7 +550,7 @@ jobs:
                   <span className="bg-indigo-100 text-indigo-900 px-3 py-1 rounded-full text-xs font-bold uppercase">Academic Year: 2026–27</span>
                 </div>
 
-                {/* Report Card */}
+                {/* 1. Interactive CBSE Report Card (§43) */}
                 <div className="bg-white rounded-3xl border overflow-hidden shadow-sm">
                   <div className="bg-indigo-950 text-white p-6 flex justify-between items-center">
                     <h3 className="font-bold text-sm">Student Academic Report Card & Progress</h3>
@@ -573,7 +583,7 @@ jobs:
                   </div>
                 </div>
 
-                {/* Fees */}
+                {/* 2. Parent Fee Desk (§57) */}
                 <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
                   <h3 className="text-lg font-black text-indigo-950">Student Fee Table & Checkout</h3>
                   {paymentDone ? (
