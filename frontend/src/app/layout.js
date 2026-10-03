@@ -10,8 +10,15 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     setCurrentPath(window.location.pathname || '/');
     const handlePop = () => setCurrentPath(window.location.pathname || '/');
+    
+    // Custom listener to force instantaneous React state updates on route change
     window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
+    window.addEventListener('locationchange', handlePop);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePop);
+      window.removeEventListener('locationchange', handlePop);
+    };
   }, []);
 
   const navigateTo = (path) => {
@@ -19,7 +26,7 @@ export default function RootLayout({ children }) {
     setAboutDropdown(false);
     setResourcesDropdown(false);
     window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.dispatchEvent(new Event('locationchange')); // Triggers instant render (No cache/refresh needed!)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -37,6 +44,7 @@ export default function RootLayout({ children }) {
             if (seg === 'portal') label = 'Portal';
             if (seg === 'about') label = 'About Us';
             if (seg === 'resources') label = 'Resources';
+
             return (
               <span key={path} className="flex items-center gap-2">
                 <span className="text-slate-400">/</span>
@@ -61,30 +69,28 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased font-sans min-h-screen flex flex-col justify-between m-0 p-0 w-full overflow-x-hidden">
         <div>
-          {/* Top Contact Bar */}
+          {/* Header Top Bar */}
           <div className="bg-indigo-950 text-slate-300 text-xs py-2 px-6 border-b border-indigo-900 w-full">
             <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
               <div className="flex items-center gap-6">
                 <span>📞 +91 98765 43210</span>
                 <span>✉️ info@delhipublicmodel.edu.in</span>
-                <span className="hidden md:inline">📍 Sector 14, Knowledge Corridor, New Delhi 110001</span>
               </div>
               <div className="flex gap-4 items-center">
                 <span className="text-amber-400 font-bold">CBSE Affiliation: 2130098</span>
                 <div className="flex gap-3">
                   <a href="https://facebook.com" target="_blank" className="hover:text-white">FB</a>
                   <a href="https://instagram.com" target="_blank" className="hover:text-white">IG</a>
-                  <a href="https://youtube.com" target="_blank" className="hover:text-white">YT</a>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Main Navigation Header */}
+          {/* Main Header */}
           <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm w-full">
             <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
-                <div className="w-12 h-12 bg-indigo-900 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md">DP</div>
+                <div className="w-12 h-12 bg-indigo-900 rounded-2xl flex items-center justify-center text-white font-black text-xl">DP</div>
                 <div>
                   <h1 className="text-xl font-black text-indigo-950 tracking-tight leading-tight">DELHI PUBLIC MODEL SCHOOL</h1>
                   <p className="text-xs text-amber-600 font-semibold uppercase tracking-wider">Discipline • Excellence • Integrity</p>
@@ -99,13 +105,13 @@ export default function RootLayout({ children }) {
                   <button onClick={() => navigateTo('/about')} className="hover:text-indigo-600 flex items-center gap-1">About Us ▼</button>
                   {aboutDropdown && (
                     <div className="absolute left-0 mt-1 w-64 bg-white border rounded-2xl shadow-2xl py-2 text-xs z-50">
-                      <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 font-bold text-indigo-950 hover:bg-slate-50">Overview</button>
-                      <button onClick={() => navigateTo('/about/infrastructure')} className="w-full text-left px-4 py-2 hover:bg-slate-50">School Infrastructure</button>
-                      <button onClick={() => navigateTo('/about/facilities')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Facilities</button>
-                      <button onClick={() => navigateTo('/about/achievements')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Achievements</button>
-                      <button onClick={() => navigateTo('/about/rules')} className="w-full text-left px-4 py-2 hover:bg-slate-50">School Rules</button>
-                      <button onClick={() => navigateTo('/about/faculty')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Faculty Directory</button>
-                      <button onClick={() => navigateTo('/about/gallery')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Media Gallery</button>
+                      <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏛️ Main About Us Page (Section 9)</button>
+                      <button onClick={() => navigateTo('/about/infrastructure')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏫 School Infrastructure (Section 11)</button>
+                      <button onClick={() => navigateTo('/about/facilities')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🔬 Facilities (Section 12)</button>
+                      <button onClick={() => navigateTo('/about/achievements')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏆 Achievements (Section 13)</button>
+                      <button onClick={() => navigateTo('/about/rules')} className="w-full text-left px-4 py-2 hover:bg-slate-50">📜 School Rules (Section 14)</button>
+                      <button onClick={() => navigateTo('/about/faculty')} className="w-full text-left px-4 py-2 hover:bg-slate-50">👩‍🏫 Faculty Directory (Section 15)</button>
+                      <button onClick={() => navigateTo('/about/gallery')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🖼️ Campus Media Gallery (Section 16)</button>
                     </div>
                   )}
                 </div>
@@ -117,9 +123,9 @@ export default function RootLayout({ children }) {
                   <button onClick={() => navigateTo('/resources/academics')} className="hover:text-indigo-600 flex items-center gap-1">Resources ▼</button>
                   {resourcesDropdown && (
                     <div className="absolute left-0 mt-1 w-56 bg-white border rounded-2xl shadow-2xl py-2 text-xs z-50">
-                      <button onClick={() => navigateTo('/resources/academics')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Academics Framework</button>
-                      <button onClick={() => navigateTo('/resources/campus-life')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Campus Life</button>
-                      <button onClick={() => navigateTo('/resources/examinations')} className="w-full text-left px-4 py-2 hover:bg-slate-50">Examinations</button>
+                      <button onClick={() => navigateTo('/resources/academics')} className="w-full text-left px-4 py-2 hover:bg-slate-50">📚 Academics Framework (Section 17)</button>
+                      <button onClick={() => navigateTo('/resources/campus-life')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🌳 Campus Life (Section 11)</button>
+                      <button onClick={() => navigateTo('/resources/examinations')} className="w-full text-left px-4 py-2 hover:bg-slate-50">📝 Examinations & Reports (Section 42)</button>
                     </div>
                   )}
                 </div>
@@ -129,8 +135,8 @@ export default function RootLayout({ children }) {
               </nav>
 
               <div className="flex items-center gap-2">
-                <button onClick={() => navigateTo('/portal/student-login')} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">Student Portal</button>
-                <button onClick={() => navigateTo('/portal/admin-login')} className="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold">Staff Login</button>
+                <button onClick={() => navigateTo('/portal/student-login')} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition shadow-sm">Parent & Student Portal</button>
+                <button onClick={() => navigateTo('/portal/admin-login')} className="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold transition shadow-sm">Staff Login</button>
               </div>
             </div>
           </header>
