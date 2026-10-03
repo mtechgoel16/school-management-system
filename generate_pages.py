@@ -28,8 +28,10 @@ for d in DIRS:
 
 FILES = {}
 
+# ==========================================
 # 1. GLOBAL LAYOUT (frontend/src/app/layout.js)
-FILES[f"{ROOT}/layout.js"] = """'use client';
+# ==========================================
+FILES["frontend/src/app/layout.js"] = """'use client';
 import './globals.css';
 import { useState, useEffect } from 'react';
 
@@ -105,6 +107,7 @@ export default function RootLayout({ children }) {
                 <div className="flex gap-3">
                   <a href="https://facebook.com" target="_blank" className="hover:text-white">FB</a>
                   <a href="https://instagram.com" target="_blank" className="hover:text-white">IG</a>
+                  <a href="https://youtube.com" target="_blank" className="hover:text-white">YT</a>
                 </div>
               </div>
             </div>
@@ -216,8 +219,10 @@ export default function RootLayout({ children }) {
 }
 """
 
+# ==========================================
 # 2. HOME PAGE (frontend/src/app/page.js) - 14 SECTIONS VERBATIM
-FILES[f"{ROOT}/page.js"] = """'use client';
+# ==========================================
+FILES["frontend/src/app/page.js"] = """'use client';
 
 export default function HomePage() {
   const navigateTo = (path) => {
@@ -227,7 +232,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-16 py-8 w-full">
+    <div className="space-y-16 py-8 w-full animate-fade-in">
       {/* 1. HERO */}
       <section className="bg-gradient-to-r from-indigo-950 via-indigo-900 to-indigo-900 text-white py-24 px-6 relative overflow-hidden w-full">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -453,8 +458,10 @@ export default function HomePage() {
 }
 """
 
+# ==========================================
 # 3. ABOUT US MAIN PAGE
-FILES[f"{ROOT}/about/page.js"] = """'use client';
+# ==========================================
+FILES["frontend/src/app/about/page.js"] = """'use client';
 
 export default function AboutPage() {
   return (
@@ -503,10 +510,12 @@ export default function AboutPage() {
     </div>
   );
 }
-`;
+"""
 
-// 4. ABOUT SUBPAGES
-FILES[f"{ROOT}/about/infrastructure/page.js"] = `'use client';
+# ==========================================
+# 4. ABOUT SUBPAGES
+# ==========================================
+FILES["frontend/src/app/about/infrastructure/page.js"] = """'use client';
 export default function InfrastructurePage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -519,9 +528,9 @@ export default function InfrastructurePage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/about/facilities/page.js"] = `'use client';
+FILES["frontend/src/app/about/facilities/page.js"] = """'use client';
 export default function FacilitiesPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -534,9 +543,9 @@ export default function FacilitiesPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/about/achievements/page.js"] = `'use client';
+FILES["frontend/src/app/about/achievements/page.js"] = """'use client';
 export default function AchievementsPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -549,9 +558,9 @@ export default function AchievementsPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/about/rules/page.js"] = `'use client';
+FILES["frontend/src/app/about/rules/page.js"] = """'use client';
 export default function RulesPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -569,9 +578,9 @@ export default function RulesPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/about/faculty/page.js"] = `'use client';
+FILES["frontend/src/app/about/faculty/page.js"] = """'use client';
 export default function FacultyPage() {
   const faculty = [
     { n: 'Dr. V. K. Sharma', r: 'Principal', q: 'M.Sc., Ph.D.', wa: '9876543210', mail: 'principal@dpms.edu', fb: '#', ln: '#', ig: '#' },
@@ -606,9 +615,9 @@ export default function FacultyPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/about/gallery/page.js"] = `'use client';
+FILES["frontend/src/app/about/gallery/page.js"] = """'use client';
 export default function GalleryPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -621,10 +630,12 @@ export default function GalleryPage() {
     </div>
   );
 }
-`;
+"""
 
-// 5. BLOG INDEX & DYNAMIC SINGLE POST
-FILES[f"{ROOT}/blog/page.js"] = `'use client';
+# ==========================================
+# 5. BLOG INDEX & DYNAMIC SINGLE POST
+# ==========================================
+FILES["frontend/src/app/blog/page.js"] = """'use client';
 export default function BlogIndexPage() {
   const blogPosts = [
     { id: 'ai-in-k12-classrooms', title: 'The Role of Artificial Intelligence in K-12 Classrooms', date: 'March 29, 2026', author: 'Dr. V. K. Sharma', excerpt: 'How guided AI tools assist teachers in personalizing assessments.' },
@@ -653,9 +664,9 @@ export default function BlogIndexPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/blog/[id]/page.js"] = `'use client';
+FILES["frontend/src/app/blog/[id]/page.js"] = """'use client';
 export default function SingleBlogPost({ params }) {
   return (
     <div className="max-w-4xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -669,10 +680,12 @@ export default function SingleBlogPost({ params }) {
     </div>
   );
 }
-`;
+"""
 
-// 6. RESOURCES SUBPAGES & NEWS
-FILES[f"{ROOT}/resources/academics/page.js"] = `'use client';
+# ==========================================
+# 6. RESOURCES SUBPAGES & NEWS
+# ==========================================
+FILES["frontend/src/app/resources/academics/page.js"] = """'use client';
 export default function ResourcesAcademicsPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -685,9 +698,9 @@ export default function ResourcesAcademicsPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/resources/campus-life/page.js"] = `'use client';
+FILES["frontend/src/app/resources/campus-life/page.js"] = """'use client';
 export default function CampusLifePage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -700,9 +713,9 @@ export default function CampusLifePage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/resources/examinations/page.js"] = `'use client';
+FILES["frontend/src/app/resources/examinations/page.js"] = """'use client';
 export default function ExaminationsPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -714,9 +727,9 @@ export default function ExaminationsPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/news/page.js"] = `'use client';
+FILES["frontend/src/app/news/page.js"] = """'use client';
 export default function NewsPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 space-y-8 animate-fade-in">
@@ -725,10 +738,12 @@ export default function NewsPage() {
     </div>
   );
 }
-`;
+"""
 
-// 7. CONTACT US PAGE
-FILES[f"{ROOT}/contact/page.js"] = `'use client';
+# ==========================================
+# 7. CONTACT US PAGE
+# ==========================================
+FILES["frontend/src/app/contact/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function ContactPage() {
@@ -812,10 +827,12 @@ export default function ContactPage() {
     </div>
   );
 }
-`;
+"""
 
-// 8. PORTALS LOGIN
-FILES[`${ROOT}/portal/student-login/page.js`] = `'use client';
+# ==========================================
+# 8. PORTALS LOGIN
+# ==========================================
+FILES["frontend/src/app/portal/student-login/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function StudentLoginPage() {
@@ -853,9 +870,9 @@ export default function StudentLoginPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[`${ROOT}/portal/admin-login/page.js`] = `'use client';
+FILES["frontend/src/app/portal/admin-login/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function AdminLoginPage() {
@@ -884,8 +901,8 @@ export default function AdminLoginPage() {
         </div>
         {error && <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl font-semibold text-center">{error}</div>}
         <div className="flex bg-slate-100 p-1.5 rounded-2xl text-xs font-bold text-slate-600">
-          <button type="button" onClick={() => setRole('TEACHER')} className={`flex-1 py-2 text-center rounded-xl transition ${role === 'TEACHER' ? 'bg-white text-indigo-950 shadow-sm' : ''}`}>Faculty / Teacher</button>
-          <button type="button" onClick={() => setRole('ADMIN')} className={`flex-1 py-2 text-center rounded-xl transition ${role === 'ADMIN' ? 'bg-white text-indigo-950 shadow-sm' : ''}`}>Admin / Principal</button>
+          <button type="button" onClick={() => setRole('TEACHER')} className={"flex-1 py-2 text-center rounded-xl transition " + (role === 'TEACHER' ? 'bg-white text-indigo-950 shadow-sm' : '')}>Faculty / Teacher</button>
+          <button type="button" onClick={() => setRole('ADMIN')} className={"flex-1 py-2 text-center rounded-xl transition " + (role === 'ADMIN' ? 'bg-white text-indigo-950 shadow-sm' : '')}>Admin / Principal</button>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <input type="text" required value={username} onChange={e => setUsername(e.target.value)} className="w-full p-2.5 border rounded-xl text-sm bg-slate-50" placeholder="Username" />
@@ -899,10 +916,12 @@ export default function AdminLoginPage() {
     </div>
   );
 }
-`;
+"""
 
-// 9. STUDENT & TEACHER DASHBOARDS
-FILES[`${ROOT}/portal/student-dashboard/page.js`] = `'use client';
+# ==========================================
+# 9. STUDENT & TEACHER DASHBOARDS
+# ==========================================
+FILES["frontend/src/app/portal/student-dashboard/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function StudentDashboardPage() {
@@ -1001,7 +1020,7 @@ export default function StudentDashboardPage() {
                 <td className="p-3 font-semibold">{fee.type}</td>
                 <td className="p-3">{fee.month}</td>
                 <td className="p-3 font-bold">₹{fee.amount}</td>
-                <td className="p-3"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${fee.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>{fee.paid ? 'PAID' : 'UNPAID'}</span></td>
+                <td className="p-3"><span className={"px-2 py-0.5 rounded text-[10px] font-bold " + (fee.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')}>{fee.paid ? 'PAID' : 'UNPAID'}</span></td>
               </tr>
             ))}
           </tbody>
@@ -1033,9 +1052,9 @@ export default function StudentDashboardPage() {
     </div>
   );
 }
-`;
+"""
 
-FILES[f"{ROOT}/portal/faculty-dashboard/page.js"] = `'use client';
+FILES["frontend/src/app/portal/faculty-dashboard/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function FacultyDashboardPage() {
@@ -1052,7 +1071,7 @@ export default function FacultyDashboardPage() {
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
           <div className="flex justify-between items-center border-b pb-2">
             <h4 className="font-bold text-slate-900 text-sm">Class 1-A Attendance Sheet (Section 17)</h4>
-            <button onClick={() => setLocked(true)} disabled={locked} className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white ${locked ? 'bg-slate-300' : 'bg-emerald-600'}`}>{locked ? 'Locked' : 'Lock Attendance'}</button>
+            <button onClick={() => setLocked(true)} disabled={locked} className={"px-3 py-1.5 rounded-lg text-xs font-bold text-white " + (locked ? 'bg-slate-300' : 'bg-emerald-600')}>{locked ? 'Locked' : 'Lock Attendance'}</button>
           </div>
           <table className="w-full text-xs text-left border rounded-xl">
             <thead className="bg-slate-100 font-bold"><tr><th className="p-2">Student</th><th className="p-2">Status</th></tr></thead>
@@ -1074,10 +1093,12 @@ export default function FacultyDashboardPage() {
     </div>
   );
 }
-`;
+"""
 
-// 10. EXECUTIVE ADMIN DASHBOARD WITH COMPLETE STUDENT REGISTRATION FORM (VERBATIM FIELD STRUCTURE)
-FILES[f"{ROOT}/portal/admin-dashboard/page.js"] = `'use client';
+# ==========================================
+# 10. EXECUTIVE ADMIN DASHBOARD WITH COMPLETE STUDENT REGISTRATION FORM
+# ==========================================
+FILES["frontend/src/app/portal/admin-dashboard/page.js"] = """'use client';
 import { useState } from 'react';
 
 export default function AdminDashboardPage() {
@@ -1086,15 +1107,12 @@ export default function AdminDashboardPage() {
 
   // 100% COMPLETE FORM DATA MATCHING YOUR DOCUMENT SCHEMA
   const [formData, setFormData] = useState({
-    // Academic Details
     admissionNo: 'ADM-2026-1048',
     academicClass: 'Class 1',
     section: 'A',
     rollNumber: '',
     admissionDate: '2026-04-01',
     transport: false,
-    
-    // Personal Details
     firstName: '',
     lastName: '',
     dob: '',
@@ -1102,8 +1120,6 @@ export default function AdminDashboardPage() {
     bloodGroup: 'O+',
     aadhaarNumber: 'XXXX-XXXX-XXXX-4321',
     photo: null,
-    
-    // Guardian & Contact
     fatherName: '',
     motherName: '',
     primaryMobile: '',
@@ -1129,33 +1145,31 @@ export default function AdminDashboardPage() {
 
   const handleRegisterStudent = (e) => {
     e.preventDefault();
-    const newId = `ST00${studentRoster.length + 1}`;
-    const generatedAdm = `ADM-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newId = 'ST00' + (studentRoster.length + 1);
+    const generatedAdm = 'ADM-2026-' + Math.floor(1000 + Math.random() * 9000);
 
-    // Commit student into Active Roster
     setStudentRoster([
       ...studentRoster,
       {
         id: newId,
         adm: generatedAdm,
-        name: `${formData.firstName} ${formData.lastName}`,
-        class: `${formData.academicClass}-${formData.section}`,
+        name: formData.firstName + ' ' + formData.lastName,
+        class: formData.academicClass + '-' + formData.section,
         roll: formData.rollNumber,
         parent: formData.fatherName,
         phone: formData.primaryMobile
       }
     ]);
 
-    setSuccessMsg(`✅ Student "${formData.firstName} ${formData.lastName}" successfully registered with Admission No: ${generatedAdm} and ID: ${newId}! Credentials generated (Username: ${generatedAdm}, Password: Welcome@${formData.rollNumber}).`);
+    setSuccessMsg('✅ Student "' + formData.firstName + ' ' + formData.lastName + '" successfully registered with Admission No: ' + generatedAdm + ' and ID: ' + newId + '! Credentials generated (Username: ' + generatedAdm + ', Password: Welcome@' + formData.rollNumber + ').');
 
     setTimeout(() => {
       setSuccessMsg('');
       setShowAddModal(false);
     }, 4500);
 
-    // Reset Form
     setFormData({
-      admissionNo: `ADM-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      admissionNo: 'ADM-2026-' + Math.floor(1000 + Math.random() * 9000),
       academicClass: 'Class 1',
       section: 'A',
       rollNumber: '',
@@ -1181,7 +1195,6 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-6 space-y-8 animate-fade-in">
-      {/* Top Header */}
       <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
         <div>
           <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Master Plan Section 92</span>
@@ -1195,10 +1208,9 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* 10 Executive KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'TOTAL STUDENTS', val: `${1420 + studentRoster.length - 2}`, color: 'border-indigo-600' },
+          { label: 'TOTAL STUDENTS', val: '' + (1420 + studentRoster.length - 2), color: 'border-indigo-600' },
           { label: 'TOTAL FACULTY', val: '68', color: 'border-blue-600' },
           { label: 'PRESENT TODAY', val: '1,385', color: 'border-emerald-600' },
           { label: 'ABSENT TODAY', val: '35', color: 'border-rose-600' },
@@ -1206,17 +1218,16 @@ export default function AdminDashboardPage() {
           { label: 'FEES COLLECTED', val: '₹18,40,000', color: 'border-teal-600' },
           { label: 'UPCOMING EXAMS', val: '4 Assessments', color: 'border-violet-600' },
           { label: 'UPCOMING EVENTS', val: '3 Events', color: 'border-sky-600' },
-          { label: 'NEW ADMISSIONS', val: `${42 + studentRoster.length - 2} Applicants`, color: 'border-fuchsia-600' },
+          { label: 'NEW ADMISSIONS', val: '' + (42 + studentRoster.length - 2) + ' Applicants', color: 'border-fuchsia-600' },
           { label: 'LEAVE REQUESTS', val: '6 Pending', color: 'border-orange-600' },
         ].map((c, i) => (
-          <div key={i} className={`p-4 bg-white rounded-2xl border-l-4 shadow-sm ${c.color}`}>
+          <div key={i} className={"p-4 bg-white rounded-2xl border-l-4 shadow-sm " + c.color}>
             <p className="text-xs text-slate-400 font-bold">{c.label}</p>
             <p className="text-lg font-black mt-1 text-slate-800">{c.val}</p>
           </div>
         ))}
       </div>
 
-      {/* Active Student Roster Table */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
         <div className="flex justify-between items-center border-b pb-3">
           <h3 className="font-bold text-slate-900 text-sm">Enrolled Student Directory (PostgreSQL Connected)</h3>
@@ -1248,7 +1259,6 @@ export default function AdminDashboardPage() {
         </table>
       </div>
 
-      {/* COMPLETE STUDENT ADMISSION REGISTRATION FORM MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white p-6 md:p-8 rounded-3xl border shadow-2xl max-w-3xl w-full my-8">
@@ -1267,8 +1277,6 @@ export default function AdminDashboardPage() {
             )}
 
             <form onSubmit={handleRegisterStudent} className="space-y-6 text-xs font-sans">
-              
-              {/* SECTION A: ACADEMIC DETAILS */}
               <div className="space-y-3">
                 <h5 className="font-bold uppercase tracking-wider text-indigo-600 border-b pb-1 text-[10px]">1. Academic & Enrollment Assignment</h5>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1276,7 +1284,7 @@ export default function AdminDashboardPage() {
                     <label className="font-bold text-slate-700">Academic Class *</label>
                     <select name="academicClass" value={formData.academicClass} onChange={handleChange} className="w-full mt-1 p-2 border rounded-xl bg-slate-50 font-bold">
                       {[...Array(12)].map((_, i) => (
-                        <option key={i+1} value={`Class ${i+1}`}>Class {i+1}</option>
+                        <option key={i+1} value={"Class " + (i+1)}>Class {i+1}</option>
                       ))}
                     </select>
                   </div>
@@ -1299,7 +1307,6 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* SECTION B: STUDENT PERSONAL INFORMATION */}
               <div className="space-y-3 border-t pt-4">
                 <h5 className="font-bold uppercase tracking-wider text-indigo-600 border-b pb-1 text-[10px]">2. Student Personal Information</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1342,7 +1349,6 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* SECTION C: GUARDIAN & RESIDENTIAL ADDRESS */}
               <div className="space-y-3 border-t pt-4">
                 <h5 className="font-bold uppercase tracking-wider text-indigo-600 border-b pb-1 text-[10px]">3. Parent / Guardian & Communication Details</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1369,7 +1375,6 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* SECTION D: TRANSPORT FACILITY */}
               <div className="p-3 bg-slate-50 border rounded-2xl flex items-center gap-3 border-t mt-4">
                 <input type="checkbox" id="transport" name="transport" checked={formData.transport} onChange={handleChange} className="w-4 h-4 text-indigo-600 rounded" />
                 <label htmlFor="transport" className="font-bold text-slate-700 cursor-pointer">
@@ -1388,15 +1393,14 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-`;
+"""
 
-// Write all 21 modular files
-for (const [filePath, content] of Object.entries(FILES)) {
-  const dirPath = path.dirname(filePath);
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-  fs.writeFileSync(filePath, content, 'utf8');
-}
+# Write all 21 modular files
+for path, content in FILES.items():
+    d = os.path.dirname(path)
+    if d and not os.path.exists(d):
+        os.makedirs(d, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
 
-console.log("Successfully generated all modular pages using Node.js!");
+print(f"Successfully generated all {len(FILES)} independent page files!")
