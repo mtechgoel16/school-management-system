@@ -90,7 +90,7 @@ export default function RootLayout({ children }) {
           <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm w-full">
             <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
-                <div className="w-12 h-12 bg-indigo-900 rounded-2xl flex items-center justify-center text-white font-black text-xl">DP</div>
+                <div className="w-12 h-12 bg-indigo-900 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md">DP</div>
                 <div>
                   <h1 className="text-xl font-black text-indigo-950 tracking-tight leading-tight">DELHI PUBLIC MODEL SCHOOL</h1>
                   <p className="text-xs text-amber-600 font-semibold uppercase tracking-wider">Discipline • Excellence • Integrity</p>
@@ -100,12 +100,12 @@ export default function RootLayout({ children }) {
               <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-700">
                 <button onClick={() => navigateTo('/')} className="hover:text-indigo-600">Home</button>
                 
-                {/* About Us 6 Subpages Dropdown */}
+                {/* About Us Subpages Dropdown */}
                 <div className="relative py-2 group" onMouseEnter={() => setAboutDropdown(true)} onMouseLeave={() => setAboutDropdown(false)}>
                   <button onClick={() => navigateTo('/about')} className="hover:text-indigo-600 flex items-center gap-1">About Us ▼</button>
                   {aboutDropdown && (
                     <div className="absolute left-0 mt-1 w-64 bg-white border rounded-2xl shadow-2xl py-2 text-xs z-50">
-                      <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏛️ Main About Us Page (Section 9)</button>
+                      <button onClick={() => navigateTo('/about')} className="w-full text-left px-4 py-2 font-bold text-indigo-950 hover:bg-slate-50">🏛️ Main About Us Page (Section 9)</button>
                       <button onClick={() => navigateTo('/about/infrastructure')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏫 School Infrastructure (Section 11)</button>
                       <button onClick={() => navigateTo('/about/facilities')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🔬 Facilities (Section 12)</button>
                       <button onClick={() => navigateTo('/about/achievements')} className="w-full text-left px-4 py-2 hover:bg-slate-50">🏆 Achievements (Section 13)</button>
@@ -136,7 +136,7 @@ export default function RootLayout({ children }) {
 
               <div className="flex items-center gap-2">
                 <button onClick={() => navigateTo('/portal/student-login')} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition shadow-sm">Parent & Student Portal</button>
-                <button onClick={() => navigateTo('/portal/admin-login')} className="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold transition shadow-sm">Staff Login</button>
+                <button onClick={() => navigateTo('/portal/admin-login')} className="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold transition shadow-sm">Admin Board</button>
               </div>
             </div>
           </header>
