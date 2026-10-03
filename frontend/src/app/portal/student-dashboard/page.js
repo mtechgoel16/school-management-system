@@ -7,7 +7,7 @@ export default function StudentDashboardPage() {
   const [selectedChild, setSelectedChild] = useState('Arjun Sharma');
   const [activeReportExam, setActiveReportExam] = useState('Annual');
   const [expandedSubject, setExpandedSubject] = useState('Hindi');
-  const [selectedFeeIds, setSelectedFeeIds] = useState(['F11', 'F12']);
+  const [selectedFeeIds, setSelectedFeeIds] = useState(['M11', 'M12']);
   const [qrGenerated, setQrGenerated] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
 
@@ -76,22 +76,33 @@ export default function StudentDashboardPage() {
     'All Examinations': []
   };
 
-  // Full 12-Month Itemized Fee Table Data
-  const [feeLedgerList, setFeeLedgerList] = useState([
-    { id: 'F01', type: 'Tuition Fee (Monthly Plan)', month: 'April 2026', due: '10-Apr-2026', amount: 1000, paid: true },
-    { id: 'F02', type: 'Tuition Fee (Monthly Plan)', month: 'May 2026', due: '10-May-2026', amount: 1000, paid: true },
-    { id: 'F03', type: 'Transport Charge (Monthly Option)', month: 'June 2026', due: '10-Jun-2026', amount: 800, paid: true },
-    { id: 'F04', type: 'Examination Fee', month: 'July 2026', due: '10-Jul-2026', amount: 500, paid: true },
-    { id: 'F05', type: 'Annual Fee (Upfront Plan)', month: 'August 2026', due: '10-Aug-2026', amount: 11000, paid: true },
-    { id: 'F06', type: 'Tuition Fee (Monthly Plan)', month: 'September 2026', due: '10-Sep-2026', amount: 1000, paid: true },
-    { id: 'F07', type: 'Transport Charge (Yearly Option)', month: 'October 2026', due: '10-Oct-2026', amount: 8000, paid: true },
-    { id: 'F08', type: 'Activity & Sports Fee', month: 'November 2026', due: '10-Nov-2026', amount: 600, paid: true },
-    { id: 'F09', type: 'Tuition Fee (Monthly Plan)', month: 'December 2026', due: '10-Dec-2026', amount: 1000, paid: true },
-    { id: 'F10', type: 'Tuition Fee (Monthly Plan)', month: 'January 2027', due: '10-Jan-2027', amount: 1000, paid: true },
-    { id: 'F11', type: 'Tuition Fee (Monthly Plan)', month: 'February 2027', due: '10-Feb-2027', amount: 1000, paid: false },
-    { id: 'F12', type: 'Tuition Fee (Monthly Plan)', month: 'March 2027', due: '10-Mar-2027', amount: 1000, paid: false },
-    { id: 'F13', type: 'Transport Charge (Monthly Option)', month: 'March 2027', due: '10-Mar-2027', amount: 800, paid: false }
+  // 1. TOP ROWS: Annual, One-Time & Optional Charges
+  const [annualFees, setAnnualFees] = useState([
+    { id: 'A01', type: 'Annual Fee (Upfront Plan)', category: 'Annual / One-Time', period: 'Academic Session 2026–27', due: '10-Apr-2026', amount: 11000, paid: true },
+    { id: 'A02', type: 'Transport Charge (Yearly Option - Optional)', category: 'Optional Transport', period: 'Academic Session 2026–27', due: '10-Apr-2026', amount: 8000, paid: true },
+    { id: 'A03', type: 'Activity & Sports Fee', category: 'Annual / One-Time', period: 'Academic Session 2026–27', due: '10-Jul-2026', amount: 600, paid: true },
+    { id: 'A04', type: 'Examination Fee', category: 'Annual / One-Time', period: 'Academic Session 2026–27', due: '10-Sep-2026', amount: 500, paid: true }
   ]);
+
+  // 2. BOTTOM ROWS: Month-wise Fees (Chronological April 2026 to March 2027)
+  const [monthlyFees, setMonthlyFees] = useState([
+    { id: 'M01', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'April 2026', due: '10-Apr-2026', amount: 1000, paid: true },
+    { id: 'M02', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'May 2026', due: '10-May-2026', amount: 1000, paid: true },
+    { id: 'M03', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'June 2026', due: '10-Jun-2026', amount: 1000, paid: true },
+    { id: 'M04', type: 'Transport Charge (Monthly Option - Optional)', category: 'Monthly Transport', period: 'June 2026', due: '10-Jun-2026', amount: 800, paid: true },
+    { id: 'M05', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'July 2026', due: '10-Jul-2026', amount: 1000, paid: true },
+    { id: 'M06', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'August 2026', due: '10-Aug-2026', amount: 1000, paid: true },
+    { id: 'M07', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'September 2026', due: '10-Sep-2026', amount: 1000, paid: true },
+    { id: 'M08', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'October 2026', due: '10-Oct-2026', amount: 1000, paid: true },
+    { id: 'M09', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'November 2026', due: '10-Nov-2026', amount: 1000, paid: true },
+    { id: 'M10', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'December 2026', due: '10-Dec-2026', amount: 1000, paid: true },
+    { id: 'M11', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'January 2027', due: '10-Jan-2027', amount: 1000, paid: true },
+    { id: 'M12', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'February 2027', due: '10-Feb-2027', amount: 1000, paid: false },
+    { id: 'M13', type: 'Tuition Fee (Monthly Plan)', category: 'Monthly Fee', period: 'March 2027', due: '10-Mar-2027', amount: 1000, paid: false },
+    { id: 'M14', type: 'Transport Charge (Monthly Option - Optional)', category: 'Monthly Transport', period: 'March 2027', due: '10-Mar-2027', amount: 800, paid: false }
+  ]);
+
+  const allFees = [...annualFees, ...monthlyFees];
 
   const getCurrentExamSubjects = () => {
     if (activeReportExam === 'All Examinations') return examResultsData['Annual'];
@@ -116,7 +127,15 @@ export default function StudentDashboardPage() {
   const { max: totalMax, obt: totalObt, pct: percentage, g: grade } = calculateResultSummary();
 
   const calculateSelectedFeeTotal = () => {
-    return feeLedgerList.filter(f => selectedFeeIds.includes(f.id)).reduce((sum, item) => sum + item.amount, 0);
+    return allFees.filter(f => selectedFeeIds.includes(f.id)).reduce((sum, item) => sum + item.amount, 0);
+  };
+
+  const toggleSelectFee = (id) => {
+    if (selectedFeeIds.includes(id)) {
+      setSelectedFeeIds(selectedFeeIds.filter(item => item !== id));
+    } else {
+      setSelectedFeeIds([...selectedFeeIds, id]);
+    }
   };
 
   return (
@@ -286,27 +305,27 @@ export default function StudentDashboardPage() {
         </div>
       </div>
 
-      {/* 4. PARENT FEE DESK & 12-MONTH ITEMIZED TABLE */}
+      {/* 4. PARENT FEE DESK: EXACT SEQUENCED FEE TABLE */}
       <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg space-y-6">
         <div className="flex justify-between items-center border-b pb-4">
           <div>
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Fee Management & Ledger (Section 57)</span>
-            <h3 className="text-2xl font-black text-slate-900">Student 12-Month Itemized Fee Table</h3>
-            <p className="text-xs text-slate-500 mt-1">Full academic session (April 2026 to March 2027) with individual fee types, paid/unpaid statuses and checkout triggers.</p>
+            <h3 className="text-2xl font-black text-slate-900">Student Itemized Fee Table</h3>
+            <p className="text-xs text-slate-500 mt-1">Structured with Annual, Optional & One-time charges first, followed by month-by-month billing schedules.</p>
           </div>
           <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
             Outstanding Dues: {calculateSelectedFeeTotal() > 0 ? "₹" + calculateSelectedFeeTotal() : "₹0"}
           </span>
         </div>
 
-        {/* Complete 12-Month Ledger Table */}
+        {/* Unified Table Structure */}
         <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
           <table className="w-full text-xs text-left">
             <thead className="bg-indigo-950 text-white font-bold">
               <tr>
                 <th className="p-3">Select</th>
                 <th className="p-3">Fee Type</th>
-                <th className="p-3">Period / Month</th>
+                <th className="p-3">Billing Cycle / Month</th>
                 <th className="p-3">Due Date</th>
                 <th className="p-3">Amount</th>
                 <th className="p-3">Status</th>
@@ -314,27 +333,31 @@ export default function StudentDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {feeLedgerList.map((fee) => (
-                <tr key={fee.id} className="hover:bg-slate-50">
+              
+              {/* SECTION HEADER 1: ANNUAL & OPTIONAL CHARGES */}
+              <tr className="bg-indigo-50/70 border-b border-indigo-100">
+                <td colSpan={7} className="px-4 py-2 font-black text-indigo-950 text-[11px] uppercase tracking-wider">
+                  ⭐ Top Rows: Annual, One-Time & Optional Charges
+                </td>
+              </tr>
+              {annualFees.map((fee) => (
+                <tr key={fee.id} className="hover:bg-slate-50 bg-white">
                   <td className="p-3 text-center">
                     {!fee.paid ? (
                       <input
                         type="checkbox"
                         checked={selectedFeeIds.includes(fee.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) setSelectedFeeIds([...selectedFeeIds, fee.id]);
-                          else setSelectedFeeIds(selectedFeeIds.filter((id) => id !== fee.id));
-                        }}
+                        onChange={() => toggleSelectFee(fee.id)}
                         className="w-4 h-4 text-indigo-600 rounded cursor-pointer"
                       />
                     ) : (
                       <span className="text-emerald-600 font-bold">✓</span>
                     )}
                   </td>
-                  <td className="p-3 font-semibold text-slate-900">{fee.type}</td>
-                  <td className="p-3 font-bold text-slate-700">{fee.month}</td>
+                  <td className="p-3 font-bold text-slate-900">{fee.type}</td>
+                  <td className="p-3 text-slate-600 font-medium">{fee.period}</td>
                   <td className="p-3 text-slate-500">{fee.due}</td>
-                  <td className="p-3 font-bold text-slate-900">₹{fee.amount}</td>
+                  <td className="p-3 font-bold text-slate-900">₹{fee.amount.toLocaleString()}</td>
                   <td className="p-3">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                       fee.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
@@ -344,7 +367,7 @@ export default function StudentDashboardPage() {
                   </td>
                   <td className="p-3">
                     {fee.paid ? (
-                      <button onClick={() => alert(`Receipt downloaded for ${fee.type} (${fee.month})`)} className="text-indigo-600 font-bold hover:underline">
+                      <button onClick={() => alert(`Receipt downloaded for ${fee.type}`)} className="text-indigo-600 font-bold hover:underline">
                         Download Receipt
                       </button>
                     ) : (
@@ -355,6 +378,52 @@ export default function StudentDashboardPage() {
                   </td>
                 </tr>
               ))}
+
+              {/* SECTION HEADER 2: MONTHLY FEES */}
+              <tr className="bg-slate-100 border-t-2 border-b border-slate-200">
+                <td colSpan={7} className="px-4 py-2 font-black text-slate-800 text-[11px] uppercase tracking-wider">
+                  📅 Month-Wise Fee Schedules (Session 2026–27)
+                </td>
+              </tr>
+              {monthlyFees.map((fee) => (
+                <tr key={fee.id} className="hover:bg-slate-50 bg-white">
+                  <td className="p-3 text-center">
+                    {!fee.paid ? (
+                      <input
+                        type="checkbox"
+                        checked={selectedFeeIds.includes(fee.id)}
+                        onChange={() => toggleSelectFee(fee.id)}
+                        className="w-4 h-4 text-indigo-600 rounded cursor-pointer"
+                      />
+                    ) : (
+                      <span className="text-emerald-600 font-bold">✓</span>
+                    )}
+                  </td>
+                  <td className="p-3 font-semibold text-slate-900">{fee.type}</td>
+                  <td className="p-3 font-bold text-indigo-950">{fee.period}</td>
+                  <td className="p-3 text-slate-500">{fee.due}</td>
+                  <td className="p-3 font-bold text-slate-900">₹{fee.amount.toLocaleString()}</td>
+                  <td className="p-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      fee.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                    }`}>
+                      {fee.paid ? 'Paid' : 'Unpaid'}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    {fee.paid ? (
+                      <button onClick={() => alert(`Receipt downloaded for ${fee.type} (${fee.period})`)} className="text-indigo-600 font-bold hover:underline">
+                        Download Receipt
+                      </button>
+                    ) : (
+                      <button onClick={() => { setSelectedFeeIds([fee.id]); setQrGenerated(true); }} className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-[10px] shadow-sm transition">
+                        Pay Now
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+
             </tbody>
           </table>
         </div>
@@ -368,7 +437,7 @@ export default function StudentDashboardPage() {
               selectedFeeIds.length > 0 ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
-            Pay Selected Fees (₹{calculateSelectedFeeTotal() > 0 ? calculateSelectedFeeTotal() : "0"}) via Dynamic Single-Order UPI QR
+            Pay Selected Fees (₹{calculateSelectedFeeTotal() > 0 ? calculateSelectedFeeTotal().toLocaleString() : "0"}) via Dynamic Single-Order UPI QR
           </button>
         )}
 
@@ -379,11 +448,12 @@ export default function StudentDashboardPage() {
               [DYNAMIC QR CODE]<br />upi://pay?pa=schoolfees@okaxis&am={calculateSelectedFeeTotal()}&tr=order_st001
             </div>
             <p className="text-xs text-slate-500">
-              Amount: <strong className="text-indigo-900">₹{calculateSelectedFeeTotal() > 0 ? calculateSelectedFeeTotal() : "0"}</strong> | Settles oldest unpaid fees via strict FIFO allocation.
+              Amount: <strong className="text-indigo-900">₹{calculateSelectedFeeTotal().toLocaleString()}</strong> | Settles oldest unpaid fees via strict FIFO allocation.
             </p>
             <button
               onClick={() => {
-                setFeeLedgerList(prev => prev.map(f => selectedFeeIds.includes(f.id) ? { ...f, paid: true } : f));
+                setMonthlyFees(prev => prev.map(f => selectedFeeIds.includes(f.id) ? { ...f, paid: true } : f));
+                setAnnualFees(prev => prev.map(f => selectedFeeIds.includes(f.id) ? { ...f, paid: true } : f));
                 setPaymentDone(true);
               }}
               className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition"
